@@ -1,1 +1,1 @@
-from src.datasets.example import ExampleDataset
+from src.datasets.vocoder_dataset import VocoderDataset

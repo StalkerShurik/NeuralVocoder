@@ -33,7 +33,6 @@ class BaseDataset(Dataset):
                 should be applied on the instance. Depend on the
                 tensor name.
         """
-        self._assert_index_is_valid(index)
 
         index = self._shuffle_and_limit_index(index, limit, shuffle_index)
         self._index: List[dict] = index

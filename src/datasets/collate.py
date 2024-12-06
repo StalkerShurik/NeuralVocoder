@@ -14,12 +14,15 @@ def collate_fn(dataset_items: list[dict]):
             of the tensors.
     """
 
-    result_batch = {}
+    # max_length = max(sample['input_wav'].shape[1] for sample in dataset_items)
+    max_length = 25600
 
-    # example of collate_fn
-    result_batch["data_object"] = torch.vstack(
-        [elem["data_object"] for elem in dataset_items]
-    )
-    result_batch["labels"] = torch.tensor([elem["labels"] for elem in dataset_items])
+    padded_batch = []
+    for sample in dataset_items:
+        pad_size = max_length - sample["input_wav"].shape[1]
+        padded_sample = torch.nn.functional.pad(
+            sample["input_wav"], (0, pad_size), "constant", 0
+        )
+        padded_batch.append(padded_sample)
 
-    return result_batch
+    return {"input": torch.stack(padded_batch).squeeze(1)}
