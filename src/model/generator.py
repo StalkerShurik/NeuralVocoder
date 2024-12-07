@@ -1,6 +1,5 @@
 import torch
 from torch import nn
-from torch.nn import Sequential
 from torch.nn.utils.parametrizations import weight_norm
 
 
@@ -97,7 +96,7 @@ class Generator(nn.Module):
                 out_channels=hidden_channels,
                 kernel_size=7,
                 dilation=1,
-                padding="same",
+                padding=3,
             )
         )
 
@@ -127,14 +126,14 @@ class Generator(nn.Module):
                     out_channels=1,
                     kernel_size=7,
                     dilation=1,
-                    padding="same",
+                    padding=3,
                 )
             ),
             nn.Tanh(),
         )
 
     def forward(self, input_spec, **kwargs):
-        # input_spec = input_spec[:, :, :100]  # GOD HELP
+        input_spec = input_spec[:, :, :100]  # GOD HELP
 
         x = self.input_conv(input_spec)
 
@@ -147,4 +146,4 @@ class Generator(nn.Module):
 
         x = self.output_conv(x)
 
-        return {"generated_wav": x.squeeze(1)[:, :25600]}
+        return {"generated_wav": x.squeeze(1)}
