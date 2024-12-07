@@ -57,10 +57,10 @@ def main(config):
         lambda p: p.requires_grad, generator.parameters()
     )
 
-    trainable_params_generator = list(
+    trainable_params_discriminator = list(
         filter(lambda p: p.requires_grad, discriminatorMPD.parameters())
     )
-    trainable_params_generator.extend(
+    trainable_params_discriminator.extend(
         list(filter(lambda p: p.requires_grad, discriminatorMSD.parameters()))
     )
 
@@ -68,7 +68,7 @@ def main(config):
         config.optimizer, params=trainable_params_generator
     )
     optimizer_discriminator = instantiate(
-        config.optimizer, params=trainable_params_generator
+        config.optimizer, params=trainable_params_discriminator
     )
 
     lr_scheduler_generator = instantiate(

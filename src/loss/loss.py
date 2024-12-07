@@ -27,7 +27,7 @@ class FeatureMatchingLoss(nn.Module):
             for hf1, hf2 in zip(sub1, sub2):
                 loss += torch.mean(torch.abs(hf1 - hf2))
 
-        return 2 * loss  # lambda = 2
+        return loss
 
 
 class MelLoss(nn.Module):
@@ -40,7 +40,7 @@ class MelLoss(nn.Module):
         mel_wav1 = mel_spec(wav1)
         mel_wav2 = mel_spec(wav2)
 
-        return 45 * torch.abs(mel_wav1 - mel_wav2).mean()
+        return torch.abs(mel_wav1 - mel_wav2).mean()
 
 
 class GANLossGenerator(nn.Module):
@@ -70,8 +70,8 @@ class GeneratorLoss(nn.Module):
         gan_loss = self.gan_loss(fake)
 
         return (
-            mathcing_loss + mel_loss + gan_loss,
-            mathcing_loss / 2,
-            mel_loss / 45,
+            2 * mathcing_loss + 45 * mel_loss + gan_loss,
+            mathcing_loss,
+            mel_loss,
             gan_loss,
         )
