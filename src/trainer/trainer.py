@@ -87,7 +87,12 @@ class Trainer(BaseTrainer):
             real_wav=batch["input"], generated_wav=batch["generated_wav"]
         )
 
-        loss_generator_MPD = self.loss_generator(
+        (
+            loss_generator_MPD,
+            mathcing_loss_MPD,
+            mel_loss_MPD,
+            gan_loss_MPD,
+        ) = self.loss_generator(
             hidden_features1=hidden_features1_MPD,
             hidden_features2=hidden_features2_MPD,
             wav1=batch["input"],
@@ -95,7 +100,12 @@ class Trainer(BaseTrainer):
             fake=generated_outputs_MPD,
         )
 
-        loss_generator_MSD = self.loss_generator(
+        (
+            loss_generator_MSD,
+            mathcing_loss_MSD,
+            mel_loss_MSD,
+            gan_loss_MSD,
+        ) = self.loss_generator(
             hidden_features1=hidden_features1_MSD,
             hidden_features2=hidden_features2_MSD,
             wav1=batch["input"],
@@ -108,6 +118,12 @@ class Trainer(BaseTrainer):
             "loss_discriminator_MSD": loss_discriminator_MSD,
             "loss_generator_MPD": loss_generator_MPD,
             "loss_generator_MSD": loss_generator_MSD,
+            "matching_loss_MPD": mathcing_loss_MPD,
+            "matching_loss_MSD": mathcing_loss_MSD,
+            "mel_loss_MPD": mel_loss_MPD,
+            "mel_loss_MSD": mel_loss_MSD,
+            "gan_loss_MPD": gan_loss_MPD,
+            "gan_loss_MSD": gan_loss_MSD,
             "loss": loss_discriminator_MPD
             + loss_discriminator_MSD
             + loss_generator_MPD

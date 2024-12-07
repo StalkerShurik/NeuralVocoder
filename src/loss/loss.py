@@ -40,7 +40,7 @@ class MelLoss(nn.Module):
         mel_wav1 = mel_spec(wav1)
         mel_wav2 = mel_spec(wav2)
 
-        return 45 * torch.abs(mel_wav1 - mel_wav2).sum()
+        return 45 * torch.abs(mel_wav1 - mel_wav2).mean()
 
 
 class GANLossGenerator(nn.Module):
@@ -65,8 +65,8 @@ class GeneratorLoss(nn.Module):
         self.gan_loss = GANLossGenerator()
 
     def forward(self, hidden_features1, hidden_features2, wav1, wav2, fake):
-        loss = self.feature_matching(hidden_features1, hidden_features2)
-        loss += self.mel_loss(wav1, wav2)
-        loss += self.gan_loss(fake)
+        mathcing_loss = self.feature_matching(hidden_features1, hidden_features2)
+        mel_loss = self.mel_loss(wav1, wav2)
+        gan_loss = self.gan_loss(fake)
 
-        return loss
+        return mathcing_loss + mel_loss + gan_loss, mathcing_loss, mel_loss, gan_loss
