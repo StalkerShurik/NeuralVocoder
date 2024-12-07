@@ -7,6 +7,7 @@ from tqdm.auto import tqdm
 
 from src.datasets.data_utils import inf_loop
 from src.metrics.tracker import MetricTracker
+from src.transforms.get_spec import MelSpectrogram, MelSpectrogramConfig
 from src.utils.io_utils import ROOT_PATH
 
 
@@ -60,6 +61,9 @@ class BaseTrainer:
                 should be applied on the whole batch. Depend on the
                 tensor name.
         """
+
+        self.spec = MelSpectrogram(MelSpectrogramConfig())
+
         self.is_train = True
 
         self.config = config

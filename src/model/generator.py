@@ -134,7 +134,7 @@ class Generator(nn.Module):
         )
 
     def forward(self, input_spec, **kwargs):
-        # input_spec = input_spec[:, :, :100]  # GOD HELP
+        input_spec = input_spec[:, :, :100]  # GOD HELP
 
         x = self.input_conv(input_spec)
 
@@ -147,4 +147,4 @@ class Generator(nn.Module):
 
         x = self.output_conv(x)
 
-        return {"generated_wav": x.squeeze(1)[:, :25600]}
+        return {"generated_wav": x.squeeze(1)}

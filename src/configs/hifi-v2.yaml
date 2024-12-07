@@ -21,7 +21,7 @@ loss_function_discriminator:
   _target_: src.loss.DiscriminatorLoss
 trainer:
   log_step: 20
-  n_epochs: 20
+  n_epochs: 12
   epoch_len: 600
   device_tensors: ["input"] # which tensors should be on device (ex. GPU)
   resume_from: null # null or path to the checkpoint dir with *.pth and config.yaml

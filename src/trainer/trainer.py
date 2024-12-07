@@ -171,6 +171,8 @@ class Trainer(BaseTrainer):
             self.log_spectrogram(
                 batch["input_spec"][0].detach().cpu(), "original spec train"
             )
+            generated_spec = self.spec(batch["generated_wav"][0].detach()).cpu()
+            self.log_spectrogram(generated_spec, "generated spec train")
             # self.log_spectrogram(batch['input_spec'], "input_spec")
             self.log_audio(
                 batch["input"][0].detach().cpu(),
@@ -179,8 +181,10 @@ class Trainer(BaseTrainer):
             )
         else:
             self.log_spectrogram(
-                batch["input_spec"][0].detach().cpu(), "original input_spec"
+                batch["input_spec"][0].detach().cpu(), "original spec val"
             )
+            generated_spec = self.spec(batch["generated_wav"][0].detach()).cpu()
+            self.log_spectrogram(generated_spec, "generated spec val")
             self.log_audio(
                 batch["input"][0].detach().cpu(),
                 batch["generated_wav"][0].detach().cpu(),
