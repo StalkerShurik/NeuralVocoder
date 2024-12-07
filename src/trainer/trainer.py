@@ -73,6 +73,14 @@ class Trainer(BaseTrainer):
             real=real_outputs_MSD, fake=generated_outputs_MSD
         )
 
+        all_losses = {
+            "loss_discriminator_MPD": loss_discriminator_MPD,
+            "loss_discriminator_MSD": loss_discriminator_MSD,
+            "loss_disriminator": loss_discriminator_MPD + loss_discriminator_MSD,
+        }
+
+        batch.update(all_losses)
+
         if self.is_train:
             batch["loss_disriminator"].backward()
             self._clip_grad_norm()
@@ -100,41 +108,34 @@ class Trainer(BaseTrainer):
         (
             loss_generator_MPD,
             mathcing_loss_MPD,
-            mel_loss_MPD,
             gan_loss_MPD,
         ) = self.loss_generator(
             hidden_features1=hidden_features1_MPD,
             hidden_features2=hidden_features2_MPD,
-            wav1=batch["input"],
-            wav2=batch["generated_wav"],
             fake=generated_outputs_MPD,
         )
 
         (
             loss_generator_MSD,
             mathcing_loss_MSD,
-            mel_loss_MSD,
             gan_loss_MSD,
         ) = self.loss_generator(
             hidden_features1=hidden_features1_MSD,
             hidden_features2=hidden_features2_MSD,
-            wav1=batch["input"],
-            wav2=batch["generated_wav"],
             fake=generated_outputs_MSD,
         )
 
+        mell_loss = self.mel_loss(batch["input"], batch["generated_wav"]) * 45
+
         all_losses = {
-            "loss_discriminator_MPD": loss_discriminator_MPD,
-            "loss_discriminator_MSD": loss_discriminator_MSD,
             "loss_generator_MPD": loss_generator_MPD,
             "loss_generator_MSD": loss_generator_MSD,
             "matching_loss_MPD": mathcing_loss_MPD,
             "matching_loss_MSD": mathcing_loss_MSD,
-            "mel_loss": mel_loss_MPD + mel_loss_MSD,
+            "mel_loss": mell_loss,
             "gan_loss_MPD": gan_loss_MPD,
             "gan_loss_MSD": gan_loss_MSD,
-            "loss_disriminator": loss_discriminator_MPD + loss_discriminator_MSD,
-            "loss_generator": loss_generator_MPD + loss_generator_MSD,
+            "loss_generator": loss_generator_MPD + loss_generator_MSD + mell_loss,
         }
 
         batch.update(all_losses)

@@ -6,6 +6,7 @@ from torch.nn.utils import clip_grad_norm_
 from tqdm.auto import tqdm
 
 from src.datasets.data_utils import inf_loop
+from src.loss.loss import MelLoss
 from src.metrics.tracker import MetricTracker
 from src.transforms.get_spec import MelSpectrogram, MelSpectrogramConfig
 from src.utils.io_utils import ROOT_PATH
@@ -67,6 +68,7 @@ class BaseTrainer:
             spec_device = "cuda" if torch.cuda.is_available() else "cpu"
         self.spec = MelSpectrogram(MelSpectrogramConfig()).to(spec_device)
 
+        self.mel_loss = MelLoss().to(spec_device)
         self.is_train = True
 
         self.config = config

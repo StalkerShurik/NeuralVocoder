@@ -64,14 +64,13 @@ class GeneratorLoss(nn.Module):
         self.mel_loss = MelLoss()
         self.gan_loss = GANLossGenerator()
 
-    def forward(self, hidden_features1, hidden_features2, wav1, wav2, fake):
+    def forward(self, hidden_features1, hidden_features2, fake):
         mathcing_loss = self.feature_matching(hidden_features1, hidden_features2)
-        mel_loss = self.mel_loss(wav1, wav2) / 2  # as it is computed twice
+        # mel_loss = self.mel_loss(wav1, wav2) / 2  # as it is computed twice
         gan_loss = self.gan_loss(fake)
 
         return (
-            2 * mathcing_loss + 45 * mel_loss + gan_loss,
+            2 * mathcing_loss + gan_loss,
             mathcing_loss,
-            mel_loss,
             gan_loss,
         )
