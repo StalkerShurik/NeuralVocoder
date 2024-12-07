@@ -43,9 +43,9 @@ def main(config):
     discriminatorMPD = instantiate(config.model.MPD_dicriminator).to(device)
     discriminatorMSD = instantiate(config.model.MSD_dicriminator).to(device)
 
-    logger.info(generator)
-    logger.info(discriminatorMPD)
-    logger.info(discriminatorMSD)
+    # logger.info(generator)
+    # logger.info(discriminatorMPD)
+    # logger.info(discriminatorMSD)
 
     # get function handles of loss and metrics
     loss_generator = instantiate(config.loss_function_generator).to(device)
