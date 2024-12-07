@@ -123,8 +123,7 @@ class Trainer(BaseTrainer):
             "loss_generator_MSD": loss_generator_MSD,
             "matching_loss_MPD": mathcing_loss_MPD,
             "matching_loss_MSD": mathcing_loss_MSD,
-            "mel_loss_MPD": mel_loss_MPD,
-            "mel_loss_MSD": mel_loss_MSD,
+            "mel_loss": mel_loss_MPD + mel_loss_MSD,
             "gan_loss_MPD": gan_loss_MPD,
             "gan_loss_MSD": gan_loss_MSD,
             "loss_disriminator": loss_discriminator_MPD + loss_discriminator_MSD,
@@ -179,8 +178,14 @@ class Trainer(BaseTrainer):
                 "train",
             )
         else:
-            self.log_spectrogram(batch["input_spec"][0].detach().cpu(), "input_spec")
-            self.log_audio(batch)
+            self.log_spectrogram(
+                batch["input_spec"][0].detach().cpu(), "original input_spec"
+            )
+            self.log_audio(
+                batch["input"][0].detach().cpu(),
+                batch["generated_wav"][0].detach().cpu(),
+                "val",
+            )
 
     def log_spectrogram(self, spectrogram, name):
         image = plot_spectrogram(spectrogram)

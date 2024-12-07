@@ -13,21 +13,21 @@ optimizer:
   betas: [0.8, 0.99]
 lr_scheduler:
   _target_: torch.optim.lr_scheduler.StepLR
-  gamma: 0.999
+  gamma: 0.99
   step_size: ${trainer.epoch_len}
 loss_function_generator:
   _target_: src.loss.GeneratorLoss
 loss_function_discriminator:
   _target_: src.loss.DiscriminatorLoss
 trainer:
-  log_step: 2
-  n_epochs: 10
-  epoch_len: 250
+  log_step: 20
+  n_epochs: 20
+  epoch_len: 600
   device_tensors: ["input"] # which tensors should be on device (ex. GPU)
   resume_from: null # null or path to the checkpoint dir with *.pth and config.yaml
   device: auto # device name or "auto"
   override: True # if True, will override the previous run with the same name
-  monitor: "max test_MulticlassAccuracy" # "off" or "max/min metric_name", i.e. our goal is to maximize/minimize metric
+  #monitor: "max val" # "off" or "max/min metric_name", i.e. our goal is to maximize/minimize metric
   save_period: 5 # checkpoint each save_period epochs in addition to the best epoch
   early_stop: ${trainer.n_epochs} # epochs for early stopping
   save_dir: "saved"

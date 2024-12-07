@@ -18,7 +18,7 @@ class VocoderDataset(BaseDataset):
     0 and n_classes-1 as labels.
     """
 
-    def __init__(self, part, sample_length, train_ratio=0.75, *args, **kwargs):
+    def __init__(self, part, sample_length, train_ratio=0.9, *args, **kwargs):
         """
         Args:
             input_length (int): length of the random vector.

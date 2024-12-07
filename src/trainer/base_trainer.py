@@ -110,17 +110,11 @@ class BaseTrainer:
             "monitor", "off"
         )  # format: "mnt_mode mnt_metric"
 
-        if self.monitor == "off":
-            self.mnt_mode = "off"
-            self.mnt_best = 0
-        else:
-            self.mnt_mode, self.mnt_metric = self.monitor.split()
-            assert self.mnt_mode in ["min", "max"]
-
-            self.mnt_best = inf if self.mnt_mode == "min" else -inf
-            self.early_stop = self.cfg_trainer.get("early_stop", inf)
-            if self.early_stop <= 0:
-                self.early_stop = inf
+        self.mnt_metric = "loss_generator"
+        self.mnt_best = inf
+        self.early_stop = self.cfg_trainer.get("early_stop", inf)
+        if self.early_stop <= 0:
+            self.early_stop = inf
 
         # setup visualization writer instance
         self.writer = writer
@@ -181,8 +175,8 @@ class BaseTrainer:
             logs.update(result)
 
             # print logged information to the screen
-            for key, value in logs.items():
-                self.logger.info(f"    {key: 15s}: {value}")
+            # for key, value in logs.items():
+            #     self.logger.info(f"    {key: 15s}: {value}")
 
             # evaluate model performance according to configured metric,
             # save best checkpoint as model_best
@@ -278,7 +272,10 @@ class BaseTrainer:
             logs (dict): logs that contain the information about evaluation.
         """
         self.is_train = False
-        self.model.eval()
+        self.generator.eval()
+        self.discriminatorMPD.eval()
+        self.discriminatorMSD.eval()
+
         self.evaluation_metrics.reset()
         with torch.no_grad():
             for batch_idx, batch in tqdm(
@@ -317,37 +314,22 @@ class BaseTrainer:
         """
         best = False
         stop_process = False
-        if self.mnt_mode != "off":
-            try:
-                # check whether model performance improved or not,
-                # according to specified metric(mnt_metric)
-                if self.mnt_mode == "min":
-                    improved = logs[self.mnt_metric] <= self.mnt_best
-                elif self.mnt_mode == "max":
-                    improved = logs[self.mnt_metric] >= self.mnt_best
-                else:
-                    improved = False
-            except KeyError:
-                self.logger.warning(
-                    f"Warning: Metric '{self.mnt_metric}' is not found. "
-                    "Model performance monitoring is disabled."
-                )
-                self.mnt_mode = "off"
-                improved = False
 
-            if improved:
-                self.mnt_best = logs[self.mnt_metric]
-                not_improved_count = 0
-                best = True
-            else:
-                not_improved_count += 1
+        improved = logs["loss_generator"] <= self.mnt_best
 
-            if not_improved_count >= self.early_stop:
-                self.logger.info(
-                    "Validation performance didn't improve for {} epochs. "
-                    "Training stops.".format(self.early_stop)
-                )
-                stop_process = True
+        if improved:
+            self.mnt_best = logs[self.mnt_metric]
+            not_improved_count = 0
+            best = True
+        else:
+            not_improved_count += 1
+
+        # if not_improved_count >= self.early_stop:
+        #     self.logger.info(
+        #         "Validation performance didn't improve for {} epochs. "
+        #         "Training stops.".format(self.early_stop)
+        #     )
+        stop_process = False
         return best, stop_process, not_improved_count
 
     def move_batch_to_device(self, batch):
@@ -476,7 +458,7 @@ class BaseTrainer:
         for metric_name in metric_tracker.keys():
             self.writer.add_scalar(f"{metric_name}", metric_tracker.avg(metric_name))
 
-    def _save_checkpoint(self, epoch, save_best=False, only_best=False):
+    def _save_checkpoint(self, epoch, save_best=True, only_best=False):
         """
         Save the checkpoints.
 
@@ -487,13 +469,18 @@ class BaseTrainer:
                 'model_best.pth'(do not duplicate the checkpoint as
                 checkpoint-epochEpochNumber.pth)
         """
-        arch = type(self.model).__name__
+
+        # arch = type(self.model).__name__
         state = {
-            "arch": arch,
+            # "arch": arch,
             "epoch": epoch,
-            "state_dict": self.model.state_dict(),
-            "optimizer": self.optimizer.state_dict(),
-            "lr_scheduler": self.lr_scheduler.state_dict(),
+            "state_dict_generator": self.generator.state_dict(),
+            "state_dict_discriminatorMPD": self.discriminatorMPD.state_dict(),
+            "state_dict_discriminatorMSD": self.discriminatorMSD.state_dict(),
+            "optimizer_generator": self.optimizer_generator.state_dict(),
+            "optimizer_discriminator": self.optimizer_discriminator.state_dict(),
+            "lr_scheduler_generator": self.lr_scheduler_generator.state_dict(),
+            "lr_scheduler_discriminator": self.lr_scheduler_discriminator.state_dict(),
             "monitor_best": self.mnt_best,
             "config": self.config,
         }

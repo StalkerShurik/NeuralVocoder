@@ -1,6 +1,6 @@
 generator:
   _target_: src.model.Generator
-  hidden_channels: 128
+  hidden_channels: 512
   upsample_iters: 4
   upsample_kernels: [16, 16, 4, 4]
   MRF_params:
