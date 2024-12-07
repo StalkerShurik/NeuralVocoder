@@ -238,8 +238,11 @@ class BaseTrainer:
             if batch_idx % self.log_step == 0:
                 self.writer.set_step((epoch - 1) * self.epoch_len + batch_idx)
                 self.logger.debug(
-                    "Train Epoch: {} {} Loss: {:.6f}".format(
-                        epoch, self._progress(batch_idx), batch["loss"].item()
+                    "Train Epoch: {} {} Loss Generator: {:.6f} Loss Discriminator: {:.6f}".format(
+                        epoch,
+                        self._progress(batch_idx),
+                        batch["loss_generator"].item(),
+                        batch["loss_disriminator"].item(),
                     )
                 )
                 self.writer.add_scalar(
@@ -394,7 +397,15 @@ class BaseTrainer:
         """
         if self.config["trainer"].get("max_grad_norm", None) is not None:
             clip_grad_norm_(
-                self.model.parameters(), self.config["trainer"]["max_grad_norm"]
+                self.generator.parameters(), self.config["trainer"]["max_grad_norm"]
+            )
+            clip_grad_norm_(
+                self.discriminatorMPD.parameters(),
+                self.config["trainer"]["max_grad_norm"],
+            )
+            clip_grad_norm_(
+                self.discriminatorMSD.parameters(),
+                self.config["trainer"]["max_grad_norm"],
             )
 
     @torch.no_grad()

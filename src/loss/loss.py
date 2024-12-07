@@ -69,4 +69,9 @@ class GeneratorLoss(nn.Module):
         mel_loss = self.mel_loss(wav1, wav2) / 2  # as it is computed twice
         gan_loss = self.gan_loss(fake)
 
-        return mathcing_loss + mel_loss + gan_loss, mathcing_loss, mel_loss, gan_loss
+        return (
+            mathcing_loss + mel_loss + gan_loss,
+            mathcing_loss / 2,
+            mel_loss / 45,
+            gan_loss,
+        )

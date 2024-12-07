@@ -1,5 +1,8 @@
 from copy import copy
 
+import pandas as pd
+
+from src.logger.utils import plot_spectrogram
 from src.metrics.tracker import MetricTracker
 from src.trainer.base_trainer import BaseTrainer
 
@@ -124,16 +127,15 @@ class Trainer(BaseTrainer):
             "mel_loss_MSD": mel_loss_MSD,
             "gan_loss_MPD": gan_loss_MPD,
             "gan_loss_MSD": gan_loss_MSD,
-            "loss": loss_discriminator_MPD
-            + loss_discriminator_MSD
-            + loss_generator_MPD
-            + loss_generator_MSD,
+            "loss_disriminator": loss_discriminator_MPD + loss_discriminator_MSD,
+            "loss_generator": loss_generator_MPD + loss_generator_MSD,
         }
 
         batch.update(all_losses)
 
         if self.is_train:
-            batch["loss"].backward()  # sum of all losses is always called loss
+            batch["loss_disriminator"].backward()
+            batch["loss_generator"].backward()
             self._clip_grad_norm()
             self.optimizer_generator.step()
             self.optimizer_discriminator.step()
@@ -166,9 +168,41 @@ class Trainer(BaseTrainer):
         # such as audio, text or images, for example
 
         # logging scheme might be different for different partitions
-        if mode == "train":  # the method is called only every self.log_step steps
-            # Log Stuff
-            pass
+        if mode == "train":
+            self.log_spectrogram(
+                batch["input_spec"][0].detach().cpu(), "original spec train"
+            )
+            # self.log_spectrogram(batch['input_spec'], "input_spec")
+            self.log_audio(
+                batch["input"][0].detach().cpu(),
+                batch["generated_wav"][0].detach().cpu(),
+                "train",
+            )
         else:
-            # Log Stuff
-            pass
+            self.log_spectrogram(batch["input_spec"][0].detach().cpu(), "input_spec")
+            self.log_audio(batch)
+
+    def log_spectrogram(self, spectrogram, name):
+        image = plot_spectrogram(spectrogram)
+        self.writer.add_image(name, image)
+
+    def log_audio(self, wav_true, wav_generated, part):
+        real_wav = self.writer.wandb.Audio(
+            wav_true.squeeze(0).detach().cpu().numpy(), sample_rate=22050
+        )
+        generated_wav = self.writer.wandb.Audio(
+            wav_generated.squeeze(0).detach().cpu().numpy(), sample_rate=22050
+        )
+
+        self.writer.add_table(
+            "audio",
+            pd.DataFrame.from_dict(
+                {
+                    1: {
+                        f"real_wav_{part}": real_wav,
+                        f"generated_wav_{part}": generated_wav,
+                    }
+                },
+                orient="index",
+            ),
+        )
