@@ -34,11 +34,11 @@ class MelLoss(nn.Module):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def forward(self, wav1, wav2):
-        mel_spec = MelSpectrogram(MelSpectrogramConfig())
+        self.mel_spec = MelSpectrogram(MelSpectrogramConfig())
 
-        mel_wav1 = mel_spec(wav1)[:, :, :100]
-        mel_wav2 = mel_spec(wav2)[:, :, :100]
+    def forward(self, wav1, wav2):
+        mel_wav1 = self.mel_spec(wav1)[:, :, :100]
+        mel_wav2 = self.mel_spec(wav2)[:, :, :100]
 
         return torch.abs(mel_wav1 - mel_wav2).mean()
 
