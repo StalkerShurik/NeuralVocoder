@@ -101,7 +101,7 @@ class VocoderDataset(BaseDataset):
                 left += self._sample_length
                 r += self._sample_length
 
-            index.append({"path": str(path), "l": left, "r": min(r, data.shape[1])})
+            # index.append({"path": str(path), "l": left, "r": min(r, data.shape[1])})
 
         with index_path.open("w") as f:
             json.dump(index, f, indent=2)
