@@ -17,11 +17,16 @@ class BaseTrainer:
 
     def __init__(
         self,
-        model,
-        criterion,
+        generator,
+        discriminatorMPD,
+        discriminatorMSD,
+        loss_generator,
+        loss_discriminator,
         metrics,
-        optimizer,
-        lr_scheduler,
+        optimizer_generator,
+        optimizer_discriminator,
+        lr_scheduler_generator,
+        lr_scheduler_discriminator,
         config,
         device,
         dataloaders,
@@ -66,10 +71,15 @@ class BaseTrainer:
         self.logger = logger
         self.log_step = config.trainer.get("log_step", 50)
 
-        self.model = model
-        self.criterion = criterion
-        self.optimizer = optimizer
-        self.lr_scheduler = lr_scheduler
+        self.generator = generator
+        self.discriminatorMPD = discriminatorMPD
+        self.discriminatorMSD = discriminatorMSD
+        self.loss_generator = loss_generator
+        self.loss_discriminator = loss_discriminator
+        self.optimizer_generator = optimizer_generator
+        self.optimizer_discriminator = optimizer_discriminator
+        self.lr_scheduler_generator = lr_scheduler_generator
+        self.lr_scheduler_discriminator = lr_scheduler_discriminator
         self.batch_transforms = batch_transforms
 
         # define dataloaders
@@ -120,12 +130,12 @@ class BaseTrainer:
         self.train_metrics = MetricTracker(
             *self.config.writer.loss_names,
             "grad_norm",
-            *[m.name for m in self.metrics["train"]],
+            # *[m.name for m in self.metrics["train"]],
             writer=self.writer,
         )
         self.evaluation_metrics = MetricTracker(
             *self.config.writer.loss_names,
-            *[m.name for m in self.metrics["inference"]],
+            # *[m.name for m in self.metrics["inference"]],
             writer=self.writer,
         )
 
@@ -172,7 +182,7 @@ class BaseTrainer:
 
             # print logged information to the screen
             for key, value in logs.items():
-                self.logger.info(f"    {key:15s}: {value}")
+                self.logger.info(f"    {key: 15s}: {value}")
 
             # evaluate model performance according to configured metric,
             # save best checkpoint as model_best
@@ -198,7 +208,11 @@ class BaseTrainer:
                 this epoch.
         """
         self.is_train = True
-        self.model.train()
+
+        self.generator.train()
+        self.discriminatorMPD.train()
+        self.discriminatorMSD.train()
+
         self.train_metrics.reset()
         self.writer.set_step((epoch - 1) * self.epoch_len)
         self.writer.add_scalar("epoch", epoch)
@@ -229,7 +243,7 @@ class BaseTrainer:
                     )
                 )
                 self.writer.add_scalar(
-                    "learning rate", self.lr_scheduler.get_last_lr()[0]
+                    "learning rate", self.lr_scheduler_generator.get_last_lr()[0]
                 )
                 self._log_scalars(self.train_metrics)
                 self._log_batch(batch_idx, batch)
@@ -393,7 +407,7 @@ class BaseTrainer:
         Returns:
             total_norm (float): the calculated norm.
         """
-        parameters = self.model.parameters()
+        parameters = self.generator.parameters()
         if isinstance(parameters, torch.Tensor):
             parameters = [parameters]
         parameters = [p for p in parameters if p.grad is not None]
