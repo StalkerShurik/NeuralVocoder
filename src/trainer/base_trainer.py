@@ -62,7 +62,10 @@ class BaseTrainer:
                 tensor name.
         """
 
-        self.spec = MelSpectrogram(MelSpectrogramConfig())
+        spec_device = config.trainer.device
+        if spec_device == "auto":
+            spec_device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.spec = MelSpectrogram(MelSpectrogramConfig()).to(spec_device)
 
         self.is_train = True
 
