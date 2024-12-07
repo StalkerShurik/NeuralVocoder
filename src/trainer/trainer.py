@@ -73,6 +73,13 @@ class Trainer(BaseTrainer):
             real=real_outputs_MSD, fake=generated_outputs_MSD
         )
 
+        if self.is_train:
+            batch["loss_disriminator"].backward()
+            self._clip_grad_norm()
+            self.optimizer_discriminator.step()
+            if self.lr_scheduler_discriminator is not None:
+                self.lr_scheduler_discriminator.step()
+
         (
             hidden_features1_MPD,
             real_outputs_MPD,
@@ -133,15 +140,11 @@ class Trainer(BaseTrainer):
         batch.update(all_losses)
 
         if self.is_train:
-            batch["loss_disriminator"].backward()
             batch["loss_generator"].backward()
             self._clip_grad_norm()
             self.optimizer_generator.step()
-            self.optimizer_discriminator.step()
             if self.lr_scheduler_generator is not None:
                 self.lr_scheduler_generator.step()
-            if self.lr_scheduler_discriminator is not None:
-                self.lr_scheduler_discriminator.step()
 
         # update metrics for each loss (in case of multiple losses)
         for loss_name in self.config.writer.loss_names:
