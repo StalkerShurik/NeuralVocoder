@@ -3,6 +3,6 @@ project_name: "Hifi-FAN"
 entity: null
 run_name: "testing"
 mode: "online"
-loss_names: ["loss", "loss_discriminator_MPD", "loss_discriminator_MSD", "loss_generator_MPD", "loss_generator_MSD"] # which losses to log (useful for multi-loss tasks, s.a. GANs)
+loss_names: ["loss", "loss_discriminator_MPD", "loss_discriminator_MSD", "loss_generator_MPD", "loss_generator_MSD", "matching_loss_MPD", "matching_loss_MSD", "mel_loss_MPD", "mel_loss_MSD", "gan_loss_MPD", "gan_loss_MSD"] # which losses to log (useful for multi-loss tasks, s.a. GANs)
 log_checkpoints: False # set to True if you want to log save_dir with checkpoints to W&B
 id_length: 8 # length of the run_id
