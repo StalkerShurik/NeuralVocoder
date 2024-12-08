@@ -1,14 +1,15 @@
 defaults:
   - model: hifi-gan
   - metrics: hifi-metrics
-  - datasets: hifi-dataset #example_eval # we do not want to run inference on training data
+  #- datasets: hifi-dataset-inference-text
+  - datasets: hifi-dataset-inference-audio
   - dataloader: inference
   - transforms: hifi-transforms
   - _self_
 inferencer:
-  is_text_input: False
   device_tensors: ["input"] # which tensors should be on device (ex. GPU)
   device: auto # device name or "auto"
   save_path: null # any name here or null for default path
   seed: 1
-  from_pretrained: "/Users/alexandergaponov/Classes/HSE_dla/NeuralVocoder/checkpoint-epoch27.pth" # path to the pretrained model
+  from_pretrained: "/Users/alexandergaponov/Classes/HSE_dla/NeuralVocoder/checkpoint-epoch57.pth"
+  #from_pretrained: "/Users/alexandergaponov/Classes/HSE_dla/NeuralVocoder/checkpoint-epoch27.pth" # path to the pretrained model

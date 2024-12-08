@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 import torchaudio
+from speechbrain.pretrained import Tacotron2
 from tqdm.auto import tqdm
 
 from src.metrics.tracker import MetricTracker
@@ -55,6 +56,13 @@ class Inferencer(BaseTrainer):
 
         self.config = config
         self.cfg_trainer = self.config.inferencer
+
+        self.is_text_input = config.datasets.test.is_text
+
+        if self.is_text_input:
+            self.tacotron2 = Tacotron2.from_hparams(
+                source="speechbrain/tts-tacotron2-ljspeech", savedir="tacotron2"
+            )
 
         self.metric_values = []
 
@@ -120,8 +128,24 @@ class Inferencer(BaseTrainer):
                 the dataloader (possibly transformed via batch transform)
                 and model outputs.
         """
-        batch = self.move_batch_to_device(batch)
-        batch = self.transform_batch(batch)  # transform batch on device -- faster
+        if self.is_text_input:
+            words_limit = 20
+            words = batch["input_text"].split()
+            txt_list = [
+                " ".join(words[i : min(i + words_limit, len(words))])
+                for i in range(0, len(words), words_limit)
+            ]
+
+            spec_list = []
+            for sub_str in txt_list:
+                spec_output = self.tacotron2.encode_text(sub_str)
+                spec_list.append(spec_output[0])
+
+            batch["input"] = torch.cat(spec_list, dim=2)
+        else:
+            batch = self.move_batch_to_device(batch)
+
+            batch = self.transform_batch(batch)
 
         outputs = self.model(batch["input"])
         batch.update(outputs)
@@ -148,6 +172,7 @@ class Inferencer(BaseTrainer):
             for met in self.metrics["inference"]:
                 for path in pathes:
                     met_value = met(path)
+                    print(f"met value for sample {met_value}")
                     self.metric_values.append(met_value)
 
         return batch
@@ -185,4 +210,4 @@ class Inferencer(BaseTrainer):
                     metrics=self.evaluation_metrics,
                 )
 
-        return self.evaluation_metrics.result()
+        return {"WVMOS": np.array(self.metric_values).mean()}
