@@ -1,0 +1,5 @@
+test:
+  _target_: src.datasets.InferenceDataset
+  instance_transforms: ${transforms.instance_transforms.inference}
+  path: /Users/alexandergaponov/Classes/HSE_dla/NeuralVocoder/data/5samples_text
+  is_text: True
