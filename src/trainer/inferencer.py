@@ -1,4 +1,6 @@
+import numpy as np
 import torch
+import torchaudio
 from tqdm.auto import tqdm
 
 from src.metrics.tracker import MetricTracker
@@ -53,6 +55,8 @@ class Inferencer(BaseTrainer):
 
         self.config = config
         self.cfg_trainer = self.config.inferencer
+
+        self.metric_values = []
 
         self.device = device
 
@@ -119,36 +123,32 @@ class Inferencer(BaseTrainer):
         batch = self.move_batch_to_device(batch)
         batch = self.transform_batch(batch)  # transform batch on device -- faster
 
-        outputs = self.model(**batch)
+        outputs = self.model(batch["input"])
         batch.update(outputs)
 
-        if metrics is not None:
-            for met in self.metrics["inference"]:
-                metrics.update(met.name, met(**batch))
-
-        # Some saving logic. This is an example
-        # Use if you need to save predictions on disk
-
-        batch_size = batch["logits"].shape[0]
+        batch_size = batch["input"].shape[0]
         current_id = batch_idx * batch_size
 
+        pathes = []
+
         for i in range(batch_size):
-            # clone because of
-            # https://github.com/pytorch/pytorch/issues/1995
-            logits = batch["logits"][i].clone()
-            label = batch["labels"][i].clone()
-            pred_label = logits.argmax(dim=-1)
+            predicted_wav = batch["generated_wav"][i].clone()
 
             output_id = current_id + i
 
-            output = {
-                "pred_label": pred_label,
-                "label": label,
-            }
+            path = f"{self.save_path}/{output_id}.wav"
 
-            if self.save_path is not None:
-                # you can use safetensors or other lib here
-                torch.save(output, self.save_path / part / f"output_{output_id}.pth")
+            torchaudio.save(
+                path, predicted_wav.unsqueeze(0), backend="soundfile", sample_rate=22050
+            )
+
+            pathes.append(path)
+
+        if metrics is not None:
+            for met in self.metrics["inference"]:
+                for path in pathes:
+                    met_value = met(path)
+                    self.metric_values.append(met_value)
 
         return batch
 

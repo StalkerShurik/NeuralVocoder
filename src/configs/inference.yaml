@@ -1,13 +1,14 @@
 defaults:
-  - model: baseline
-  - metrics: example
-  - datasets: example_eval # we do not want to run inference on training data
-  - dataloader: example
-  - transforms: example
+  - model: hifi-gan
+  - metrics: hifi-metrics
+  - datasets: hifi-dataset #example_eval # we do not want to run inference on training data
+  - dataloader: inference
+  - transforms: hifi-transforms
   - _self_
 inferencer:
-  device_tensors: ["data_object", "labels"] # which tensors should be on device (ex. GPU)
+  is_text_input: False
+  device_tensors: ["input"] # which tensors should be on device (ex. GPU)
   device: auto # device name or "auto"
-  save_path: "example" # any name here, can be a dataset name
+  save_path: null # any name here or null for default path
   seed: 1
-  from_pretrained: "saved/model_best.pth" # path to the pretrained model
+  from_pretrained: "/Users/alexandergaponov/Classes/HSE_dla/NeuralVocoder/checkpoint-epoch27.pth" # path to the pretrained model

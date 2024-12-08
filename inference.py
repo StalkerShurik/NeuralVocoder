@@ -1,4 +1,5 @@
 import warnings
+from pathlib import Path
 
 import hydra
 import torch
@@ -31,17 +32,26 @@ def main(config):
 
     # setup data_loader instances
     # batch_transforms should be put on device
+
     dataloaders, batch_transforms = get_dataloaders(config, device)
 
     # build model architecture, then print to console
-    model = instantiate(config.model).to(device)
+    model = instantiate(config.model.generator).to(device)
+
     print(model)
 
     # get metrics
     metrics = instantiate(config.metrics)
 
     # save_path for model predictions
-    save_path = ROOT_PATH / "data" / "saved" / config.inferencer.save_path
+    # save_path = ROOT_PATH / "data" / "saved" / config.inferencer.save_path
+
+    save_path = (
+        Path(config.inferencer.save_path)
+        if config.inferencer.save_path is not None
+        else ROOT_PATH / "predicts"
+    )
+
     save_path.mkdir(exist_ok=True, parents=True)
 
     inferencer = Inferencer(

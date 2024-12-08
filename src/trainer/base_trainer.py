@@ -562,7 +562,7 @@ class BaseTrainer:
             print(f"Loading model weights from: {pretrained_path} ...")
         checkpoint = torch.load(pretrained_path, self.device)
 
-        if checkpoint.get("state_dict") is not None:
-            self.model.load_state_dict(checkpoint["state_dict"])
+        if checkpoint.get("state_dict_generator") is not None:
+            self.model.load_state_dict(checkpoint["state_dict_generator"])
         else:
             self.model.load_state_dict(checkpoint)
