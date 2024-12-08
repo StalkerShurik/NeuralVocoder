@@ -1,10 +1,11 @@
 import torch
+from wvmos import get_wvmos
 
 from src.metrics.base_metric import BaseMetric
 
 
-class ExampleMetric(BaseMetric):
-    def __init__(self, metric, device, *args, **kwargs):
+class WVMOS(BaseMetric):
+    def __init__(self, device, *args, **kwargs):
         """
         Example of a nested metric class. Applies metric function
         object (for example, from TorchMetrics) on tensors.
@@ -19,9 +20,10 @@ class ExampleMetric(BaseMetric):
         super().__init__(*args, **kwargs)
         if device == "auto":
             device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.metric = metric.to(device)
+        self.device = device
+        self.metric = get_wvmos(cuda=False if device != "cuda" else True)
 
-    def __call__(self, logits: torch.Tensor, labels: torch.Tensor, **kwargs):
+    def __call__(self, path, **kwargs):
         """
         Metric calculation logic.
 
@@ -31,5 +33,5 @@ class ExampleMetric(BaseMetric):
         Returns:
             metric (float): calculated metric.
         """
-        classes = logits.argmax(dim=-1)
-        return self.metric(classes, labels)
+
+        return self.metric.calculate_one(path)

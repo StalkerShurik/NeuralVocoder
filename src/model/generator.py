@@ -133,8 +133,7 @@ class Generator(nn.Module):
         )
 
     def forward(self, input_spec, **kwargs):
-        input_spec = input_spec[:, :, :100]  # GOD HELP
-
+        input_spec = input_spec[:, :, :-1]  # GOD HELP
         x = self.input_conv(input_spec)
 
         for i in range(self.upsample_iters):
