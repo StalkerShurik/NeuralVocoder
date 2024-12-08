@@ -1,0 +1,6 @@
+val:
+  _target_: src.datasets.VocoderDataset
+  part: "val"
+  instance_transforms: ${transforms.instance_transforms.inference}
+  sample_length: 10000000
+  limit: 1

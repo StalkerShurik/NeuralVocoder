@@ -21,10 +21,10 @@ loss_function_discriminator:
   _target_: src.loss.DiscriminatorLoss
 trainer:
   log_step: 20
-  n_epochs: 70
+  n_epochs: 12
   epoch_len: 800
   device_tensors: ["input"] # which tensors should be on device (ex. GPU)
-  resume_from: /Users/alexandergaponov/Classes/HSE_dla/NeuralVocoder/checkpoint-epoch27.pth # null or path to the checkpoint dir with *.pth and config.yaml
+  resume_from: null # null or path to the checkpoint dir with *.pth and config.yaml
   device: auto # device name or "auto"
   override: True # if True, will override the previous run with the same name
   #monitor: "max val" # "off" or "max/min metric_name", i.e. our goal is to maximize/minimize metric
