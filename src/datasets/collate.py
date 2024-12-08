@@ -14,7 +14,12 @@ def collate_fn(dataset_items: list[dict]):
             of the tensors.
     """
 
-    # max_length = max(sample['input_wav'].shape[1] for sample in dataset_items)
+    if "input_text" in list(dataset_items[0].keys()):
+        return {"input_text": dataset_items[0]["input_text"]}
+
+    if len(dataset_items) == 1:
+        return {"input": dataset_items[0]["input_wav"]}
+
     max_length = 25600
 
     padded_batch = []
