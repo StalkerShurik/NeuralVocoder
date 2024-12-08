@@ -524,27 +524,21 @@ class BaseTrainer:
         self.start_epoch = checkpoint["epoch"] + 1
         self.mnt_best = checkpoint["monitor_best"]
 
-        # load architecture params from checkpoint.
-        if checkpoint["config"]["model"] != self.config["model"]:
-            self.logger.warning(
-                "Warning: Architecture configuration given in the config file is different from that "
-                "of the checkpoint. This may yield an exception when state_dict is loaded."
-            )
-        self.model.load_state_dict(checkpoint["state_dict"])
+        self.generator.load_state_dict(checkpoint["state_dict_generator"])
+        self.discriminatorMPD.load_state_dict(checkpoint["state_dict_discriminatorMPD"])
+        self.discriminatorMSD.load_state_dict(checkpoint["state_dict_discriminatorMSD"])
 
-        # load optimizer state from checkpoint only when optimizer type is not changed.
-        if (
-            checkpoint["config"]["optimizer"] != self.config["optimizer"]
-            or checkpoint["config"]["lr_scheduler"] != self.config["lr_scheduler"]
-        ):
-            self.logger.warning(
-                "Warning: Optimizer or lr_scheduler given in the config file is different "
-                "from that of the checkpoint. Optimizer and scheduler parameters "
-                "are not resumed."
-            )
-        else:
-            self.optimizer.load_state_dict(checkpoint["optimizer"])
-            self.lr_scheduler.load_state_dict(checkpoint["lr_scheduler"])
+        self.optimizer_generator.load_state_dict(checkpoint["optimizer_generator"])
+        self.lr_scheduler_generator.load_state_dict(
+            checkpoint["lr_scheduler_generator"]
+        )
+
+        self.optimizer_discriminator.load_state_dict(
+            checkpoint["optimizer_discriminator"]
+        )
+        self.lr_scheduler_discriminator.load_state_dict(
+            checkpoint["lr_scheduler_discriminator"]
+        )
 
         self.logger.info(
             f"Checkpoint loaded. Resume training from epoch {self.start_epoch}"
